@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Programming Track Roster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #F6F7F5;
+  --surface: #FFFFFF;
+  --sunk: #EEF1ED;
+  --ink: #1A1E1C;
+  --muted: #626A65;
+  --faint: #8D958F;
+  --line: #DFE3DF;
+  --accent: #1F5C4A;
+  --accent-ink: #FFFFFF;
+  --lv1: #C9D8D1;
+  --lv2: #8FB3A4;
+  --lv3: #4F8A75;
+  --lv4: #1F5C4A;
+  --lv0: #E4E6E3;
+  --warn: #8A5A12;
+  --gold: #B8862B;
+  --warn-bg: #F6ECDA;
+  --shadow: 0 12px 40px rgba(20, 30, 25, .18);
+  --sans: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #121514; --surface: #1A1E1C; --sunk: #202623; --ink: #E6EAE7; --muted: #9BA49E; --faint: #6F7872;
+    --line: #2C3330; --accent: #7CC2A6; --accent-ink: #0F1A15;
+    --lv1: #34443D; --lv2: #4F7566; --lv3: #6FA38D; --lv4: #9BD6BD; --lv0: #262C29;
+    --warn: #E3AE66; --gold: #D9AE5C; --warn-bg: #2E2619; --shadow: 0 12px 40px rgba(0, 0, 0, .5);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121514; --surface: #1A1E1C; --sunk: #202623; --ink: #E6EAE7; --muted: #9BA49E; --faint: #6F7872;
+  --line: #2C3330; --accent: #7CC2A6; --accent-ink: #0F1A15;
+  --lv1: #34443D; --lv2: #4F7566; --lv3: #6FA38D; --lv4: #9BD6BD; --lv0: #262C29;
+  --warn: #E3AE66; --gold: #D9AE5C; --warn-bg: #2E2619; --shadow: 0 12px 40px rgba(0, 0, 0, .5);
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 14px/1.55 var(--sans);
+}
+.wrap { max-width: 1240px; margin: 0 auto; padding: 36px 24px 64px; display: grid; gap: 28px; }
+@media (max-width: 600px) { .wrap { padding: 24px 16px 48px; gap: 22px; } }
+a { color: inherit; }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.empty { color: var(--faint); }
+.label {
+  font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+}
+
+/* Header */
+header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px 24px; }
+header .title { display: grid; gap: 6px; }
+.lead-chip {
+  display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 10px;
+  border: 1px solid var(--line); border-radius: 99px; background: var(--surface);
+}
+.lead-chip svg { width: 22px; height: 22px; flex: none; }
+.lead-chip .crown-body { fill: var(--gold); }
+.lead-chip .crown-gem { fill: var(--surface); }
+.lead-chip .who { display: grid; line-height: 1.25; }
+.lead-chip .who b { font-weight: 600; font-size: 14px; }
+header h1 { margin: 0; font-size: 28px; line-height: 1.2; font-weight: 600; letter-spacing: -.01em; text-wrap: balance; }
+header p { margin: 0; color: var(--muted); max-width: 70ch; }
+
+/* Overview */
+.overview { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 16px; }
+@media (max-width: 960px) { .overview { grid-template-columns: 1fr 1fr; } .overview .levels { grid-column: 1 / -1; } }
+@media (max-width: 600px) { .overview { grid-template-columns: 1fr; } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 14px; align-content: start; }
+.panel h2 { margin: 0; }
+.stack { display: flex; height: 14px; border-radius: 3px; overflow: hidden; background: var(--lv0); }
+.stack span { display: block; height: 100%; }
+.legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px 12px; }
+.legend button {
+  display: flex; align-items: center; gap: 8px; border: 0; background: none; padding: 5px 6px; margin: 0 -6px;
+  border-radius: 6px; cursor: pointer; text-align: left;
+}
+.legend button:hover { background: var(--sunk); }
+.legend button[aria-pressed="true"] { background: var(--sunk); box-shadow: inset 0 0 0 1px var(--line); }
+.legend .n { margin-left: auto; font-family: var(--mono); color: var(--muted); }
+.sw { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.sw.hatch, .stack .hatch { background: repeating-linear-gradient(135deg, var(--lv0) 0 3px, var(--faint) 3px 4.5px); }
+
+.rows { display: grid; gap: 8px; }
+.row { display: grid; grid-template-columns: 58px 1fr 28px; gap: 10px; align-items: center; }
+.row .bar { display: flex; height: 10px; border-radius: 2px; overflow: hidden; }
+.row .bar span { height: 100%; }
+.row .n { text-align: right; font-family: var(--mono); color: var(--muted); font-size: 13px; }
+.facts { display: grid; gap: 8px; margin: 0; }
+.facts div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 7px; }
+.facts div:last-child { border-bottom: 0; padding-bottom: 0; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; font-family: var(--mono); }
+
+/* Filters */
+.filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.field { display: grid; gap: 4px; }
+.field.grow { flex: 1 1 220px; }
+.filters select, .filters input[type="search"] {
+  height: 36px; border: 1px solid var(--line); background: var(--surface); border-radius: 7px; padding: 0 10px; min-width: 0;
+}
+.filters input[type="search"] { width: 100%; }
+.check { display: flex; align-items: center; gap: 7px; height: 36px; padding: 0 4px; cursor: pointer; }
+.check input { accent-color: var(--accent); width: 15px; height: 15px; }
+.resultbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: -14px; }
+.linkbtn { border: 0; background: none; padding: 4px 0; color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Cards */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px;
+  display: grid; gap: 12px; grid-template-rows: auto auto auto 1fr auto; cursor: pointer; text-align: left;
+  transition: border-color .15s, transform .15s;
+}
+.card:hover { border-color: var(--faint); }
+.card.incomplete { background: var(--bg); border-style: dashed; }
+.card .top { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
+.card .name { font-size: 16px; font-weight: 600; line-height: 1.35; }
+.card .en { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+.meta { display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--muted); font-size: 13px; }
+.meta .gpa { color: var(--ink); }
+.badge { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 99px; white-space: nowrap; letter-spacing: .02em; }
+.badge.warn { color: var(--warn); background: var(--warn-bg); }
+
+.level { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.meter { display: grid; grid-template-columns: repeat(4, 14px); gap: 3px; }
+.meter i { height: 6px; border-radius: 1px; background: var(--lv0); }
+.meter i.on { background: var(--accent); }
+.tags { display: flex; flex-wrap: wrap; gap: 5px; align-content: start; }
+.tag { font-size: 12px; padding: 2px 8px; border-radius: 5px; background: var(--sunk); color: var(--ink); }
+.card .links { display: flex; gap: 16px; border-top: 1px solid var(--line); padding-top: 10px; font-size: 13px; }
+.card .links a { color: var(--accent); text-decoration: none; font-weight: 500; }
+.card .links a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.none { padding: 48px 16px; text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: 10px; }
+
+/* Drawer */
+.scrim { position: fixed; inset: 0; background: rgba(10, 14, 12, .35); z-index: 10; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(580px, 100%); z-index: 11;
+  background: var(--surface); box-shadow: var(--shadow); overflow-y: auto; overscroll-behavior: contain;
+  padding: calc(22px + env(safe-area-inset-top, 0px)) 26px calc(40px + env(safe-area-inset-bottom, 0px));
+  display: grid; gap: 22px; align-content: start;
+}
+@media (max-width: 600px) { .drawer { padding-inline: 18px; } }
+@media (prefers-reduced-motion: no-preference) {
+  .drawer { animation: slide .18s ease-out; }
+  @keyframes slide { from { transform: translateX(24px); opacity: .6; } }
+}
+.dhead { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+.dhead h2 { margin: 0; font-size: 22px; line-height: 1.3; font-weight: 600; text-wrap: balance; }
+.close { border: 1px solid var(--line); background: var(--surface); border-radius: 7px; width: 34px; height: 34px; cursor: pointer; flex: none; font-size: 18px; line-height: 1; }
+.close:hover { background: var(--sunk); }
+.kv { display: grid; grid-template-columns: 110px 1fr; gap: 8px 14px; margin: 0; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; overflow-wrap: anywhere; }
+.sec { display: grid; gap: 8px; }
+.sec h3 { margin: 0; }
+.sec p { margin: 0; max-width: 65ch; }
+.sec ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
+.lead { background: var(--sunk); border-radius: 8px; padding: 14px 16px; display: grid; gap: 6px; }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 480px) { .split { grid-template-columns: 1fr; } }
+.notes { border-left: 3px solid var(--warn); background: var(--warn-bg); padding: 10px 14px; border-radius: 0 6px 6px 0; }
+.notes ul { color: var(--ink); }
+.dlinks { display: flex; flex-wrap: wrap; gap: 8px; }
+.dlinks a {
+  border: 1px solid var(--line); border-radius: 7px; padding: 6px 12px; text-decoration: none; font-weight: 500; font-size: 13px;
+}
+.dlinks a:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: -8px; overflow-x: auto; }
+.tabs button {
+  border: 0; background: none; padding: 10px 14px; cursor: pointer; color: var(--muted); font-weight: 500;
+  border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap;
+}
+.tabs button:hover { color: var(--ink); }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.intro { margin: 0 0 16px; max-width: 75ch; }
+
+/* Private notes */
+.mynote textarea {
+  width: 100%; min-height: 96px; resize: vertical; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--bg); padding: 10px 12px; line-height: 1.5;
+}
+.mynote textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
+.mynote .hint { font-size: 12px; color: var(--faint); }
+.notedot { font-size: 11px; font-weight: 500; color: var(--accent); white-space: nowrap; }
+
+/* Mentor pairs */
+.pairs { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }
+@media (max-width: 400px) { .pairs { grid-template-columns: 1fr; } }
+.pair { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; align-content: start; }
+.pair .who { border: 0; background: none; padding: 0; cursor: pointer; text-align: left; display: grid; gap: 2px; }
+.pair .who:hover .pn { text-decoration: underline; text-underline-offset: 3px; }
+.pn { font-weight: 600; }
+.pl { font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.mentees { display: grid; gap: 10px; margin: 0; padding: 12px 0 0; list-style: none; border-top: 1px solid var(--line); }
+.mentees li { display: grid; gap: 3px; }
+.why { font-size: 12.5px; color: var(--muted); }
+.why b { font-weight: 500; color: var(--ink); }
+
+/* Skills matrix */
+.matrix-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.matrix { border-collapse: collapse; font-size: 13px; min-width: 100%; }
+.matrix th, .matrix td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: center; }
+.matrix tr:last-child td { border-bottom: 0; }
+.matrix th:first-child, .matrix td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); z-index: 1; min-width: 170px; }
+.matrix thead th { vertical-align: bottom; font-weight: 500; }
+.matrix thead button {
+  border: 0; background: none; cursor: pointer; padding: 2px 4px; border-radius: 4px; display: grid; gap: 2px; justify-items: center; margin: 0 auto;
+}
+.matrix thead button:hover, .matrix thead button[aria-pressed="true"] { background: var(--sunk); }
+.matrix thead .sk { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+.matrix thead .ct { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.matrix tbody tr:hover td { background: var(--sunk); }
+.matrix .mname { border: 0; background: none; padding: 0; cursor: pointer; text-align: left; font-weight: 500; }
+.matrix .mname:hover { text-decoration: underline; text-underline-offset: 3px; }
+.matrix .ml { display: block; font-size: 11.5px; color: var(--muted); font-weight: 400; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+.matrix td.hit { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title">
+      <span class="label">Tuwaiq Club · University of Jeddah</span>
+      <h1>Programming Track Roster</h1>
+      <p id="sub"></p>
+    </div>
+    <div class="lead-chip" id="lead" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path class="crown-body" d="M3 7.5l4.6 4L12 4.5l4.4 7 4.6-4-1.8 10.5H4.8L3 7.5z"/>
+        <rect class="crown-body" x="4.8" y="19" width="14.4" height="2" rx=".6"/>
+        <circle class="crown-gem" cx="12" cy="15" r="1.3"/>
+      </svg>
+      <span class="who"><span class="label">Track lead</span><b id="lead-name" dir="auto"></b></span>
+    </div>
+  </header>
+
+  <section class="overview" aria-label="Overview">
+    <div class="panel levels">
+      <h2 class="label">Experience level, from CVs</h2>
+      <div class="stack" id="stack"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="panel">
+      <h2 class="label">Members by year</h2>
+      <div class="rows" id="years"></div>
+    </div>
+    <div class="panel">
+      <h2 class="label">Profile data</h2>
+      <dl class="facts" id="facts"></dl>
+    </div>
+  </section>
+
+  <nav class="tabs" role="tablist" aria-label="Views">
+    <button type="button" role="tab" id="tab-members" data-view="members" aria-selected="true">Members</button>
+    <button type="button" role="tab" id="tab-pairs" data-view="pairs" aria-selected="false">Mentor pairs</button>
+    <button type="button" role="tab" id="tab-skills" data-view="skills" aria-selected="false">Skills</button>
+  </nav>
+
+  <section class="filters" id="filters" aria-label="Filters">
+    <div class="field grow">
+      <label class="label" for="q">Search</label>
+      <input type="search" id="q" placeholder="Name, skill, project…" autocomplete="off">
+    </div>
+    <div class="field"><label class="label" for="f-major">Major</label><select id="f-major"></select></div>
+    <div class="field"><label class="label" for="f-year">Year</label><select id="f-year"></select></div>
+    <div class="field"><label class="label" for="f-level">Level</label><select id="f-level"></select></div>
+    <div class="field"><label class="label" for="f-focus">Focus</label><select id="f-focus"></select></div>
+    <div class="field"><label class="label" for="f-status">Profile</label><select id="f-status"></select></div>
+    <div class="field"><label class="label" for="f-sort">Sort</label><select id="f-sort"></select></div>
+    <label class="check" for="f-pf"><input type="checkbox" id="f-pf"> Has portfolio</label>
+  </section>
+  <div class="resultbar" id="resultbar">
+    <span class="muted" id="count"></span>
+    <button class="linkbtn" id="reset" type="button">Clear filters</button>
+  </div>
+
+  <main class="grid" id="grid" role="tabpanel" aria-labelledby="tab-members"></main>
+
+  <section id="pairs" role="tabpanel" aria-labelledby="tab-pairs" hidden>
+    <p class="intro muted">Advanced and Intermediate members are paired with Beginner and Developing members, matched on shared focus areas first and then shared skills, with at most <span id="cap"></span> mentees each. Members without an analyzed CV aren't paired yet.</p>
+    <div class="pairs" id="pair-list"></div>
+  </section>
+
+  <section id="skills" role="tabpanel" aria-labelledby="tab-skills" hidden>
+    <p class="intro muted">Skills named on each analyzed CV, for skills listed by at least two members. The filters above apply. Click a skill to sort members who have it to the top.</p>
+    <div class="matrix-wrap"><table class="matrix" id="matrix"></table></div>
+  </section>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="d-name" hidden></aside>
+
+<script>
+const MEMBERS = /*DATA*/[];
+const LEAD = /*LEAD*/"";
+const LEVELS = ["Beginner", "Developing", "Intermediate", "Advanced"];
+const LV_COLOR = { Beginner: "var(--lv1)", Developing: "var(--lv2)", Intermediate: "var(--lv3)", Advanced: "var(--lv4)" };
+const ORD = ["1st", "2nd", "3rd", "4th", "5th"];
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const lvIndex = (m) => (m.level ? LEVELS.indexOf(m.level) + 1 : 0);
+const yearLabel = (y) => (y ? `${ORD[y - 1]} year` : null);
+const showEn = (m) => m.en && /[؀-ۿ]/.test(m.name);
+const dash = '<span class="empty">—</span>';
+
+/* ---------- Private notes (this browser only) ---------- */
+const NOTES_KEY = "tcptm-roster-notes";
+let myNotes = {};
+try { myNotes = JSON.parse(localStorage.getItem(NOTES_KEY)) || {}; } catch { myNotes = {}; }
+const noteKey = (m) => (m.email || m.name).toLowerCase();
+const noteOf = (m) => myNotes[noteKey(m)] || "";
+function saveNote(m, text) {
+  if (text.trim()) myNotes[noteKey(m)] = text; else delete myNotes[noteKey(m)];
+  try { localStorage.setItem(NOTES_KEY, JSON.stringify(myNotes)); return true; } catch { return false; }
+}
+
+/* ---------- Skill names, merged so "HTML/CSS/JS" and "JavaScript" count as the same skill ---------- */
+const ALIAS = {
+  js: "JavaScript", javascript: "JavaScript", typescript: "TypeScript", html: "HTML", css: "CSS",
+  "c++": "C++", c: "C", "c#": "C#", java: "Java", python: "Python", sql: "SQL", mysql: "MySQL",
+  git: "Git", github: "Git", "git & github": "Git", figma: "Figma", react: "React", "react.js": "React",
+  "node.js": "Node.js", firebase: "Firebase", flutter: "Flutter", dart: "Dart", oop: "OOP", "vs code": "VS Code",
+  "ui/ux": "UI/UX", "ui/ux design": "UI/UX", "ui design": "UI/UX", "ui/ux fundamentals": "UI/UX",
+};
+function normSkills(m) {
+  const out = new Set();
+  for (const raw of m.skills) {
+    const s = raw.replace(/\s*\(.*?\)\s*/g, " ").trim();
+    const low = s.toLowerCase();
+    if (ALIAS[low]) { out.add(ALIAS[low]); continue; }
+    const parts = s.split("/").map((p) => p.trim());
+    if (parts.length > 1 && parts.every((p) => p.length <= 6)) parts.forEach((p) => out.add(ALIAS[p.toLowerCase()] || p));
+    else out.add(s);
+  }
+  return [...out];
+}
+MEMBERS.forEach((m) => (m.norm = normSkills(m)));
+
+/* ---------- Overview ---------- */
+function overview() {
+  const total = MEMBERS.length;
+  const done = MEMBERS.filter((m) => m.complete).length;
+  $("sub").textContent = `${total} members from members.xlsx. ${done} profiles analyzed from CVs; ${total - done} are incomplete and keep only the sheet data.`;
+
+  const counts = [...LEVELS].reverse().map((l) => [l, MEMBERS.filter((m) => m.level === l).length]);
+  counts.push(["Not assessed", total - done]);
+  $("stack").innerHTML = counts.map(([l, n]) =>
+    n ? `<span class="${l === "Not assessed" ? "hatch" : ""}" style="width:${(n / total) * 100}%;${LV_COLOR[l] ? `background:${LV_COLOR[l]}` : ""}" title="${l}: ${n}"></span>` : "").join("");
+  $("legend").innerHTML = counts.map(([l, n]) =>
+    `<button type="button" data-level="${l}" aria-pressed="false"><span class="sw ${l === "Not assessed" ? "hatch" : ""}" style="${LV_COLOR[l] ? `background:${LV_COLOR[l]}` : ""}"></span>${l}<span class="n">${n}</span></button>`).join("");
+  $("legend").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    const v = b.dataset.level;
+    $("f-level").value = $("f-level").value === v ? "" : v;
+    render();
+  });
+
+  const byYear = [1, 2, 3, 4, 5, null].map((y) => [y, MEMBERS.filter((m) => m.year === y)]);
+  const max = Math.max(...byYear.map(([, a]) => a.length));
+  $("years").innerHTML = byYear.filter(([y, a]) => y || a.length).map(([y, a]) => {
+    const segs = [...LEVELS].reverse().map((l) => [l, a.filter((m) => m.level === l).length]);
+    segs.push(["Not assessed", a.filter((m) => !m.level).length]);
+    const bar = segs.map(([l, n]) => n ? `<span class="${LV_COLOR[l] ? "" : "hatch"}" style="width:${(n / max) * 100}%;${LV_COLOR[l] ? `background:${LV_COLOR[l]}` : ""}" title="${l}: ${n}"></span>` : "").join("");
+    return `<div class="row"><span class="muted">${y ? ORD[y - 1] : "Unknown"}</span><div class="bar">${bar}</div><span class="n">${a.length}</span></div>`;
+  }).join("");
+
+  const fit = (v) => MEMBERS.filter((m) => m.fit === v).length;
+  const facts = [
+    ["CVs analyzed", `${done} / ${total}`],
+    ["Portfolio link", `${MEMBERS.filter((m) => m.portfolio).length} / ${total}`],
+    ["Major fit: match · related · no", `${fit("Match")} · ${fit("Related")} · ${fit("Not related")}`],
+  ];
+  $("facts").innerHTML = facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
+}
+
+/* ---------- Filters ---------- */
+function options(id, first, values) {
+  $(id).innerHTML = `<option value="">${first}</option>` + values.map(([v, t]) => `<option value="${esc(v)}">${esc(t ?? v)}</option>`).join("");
+}
+function setupFilters() {
+  const uniq = (arr) => [...new Set(arr.filter(Boolean))];
+  options("f-major", "All majors", uniq(MEMBERS.map((m) => m.major)).sort().map((v) => [v]));
+  options("f-year", "All years", [1, 2, 3, 4, 5].filter((y) => MEMBERS.some((m) => m.year === y)).map((y) => [y, yearLabel(y)]));
+  options("f-level", "All levels", [...[...LEVELS].reverse().map((l) => [l]), ["Not assessed"]]);
+  options("f-focus", "All focus areas", uniq(MEMBERS.flatMap((m) => m.focus)).sort().map((v) => [v]));
+  options("f-status", "All profiles", [["complete", "Analyzed"], ["incomplete", "Incomplete"]]);
+  $("f-sort").innerHTML = [["level", "Level, high first"], ["gpa", "GPA, high first"], ["year", "Year, senior first"], ["name", "Name"]]
+    .map(([v, t]) => `<option value="${v}">${t}</option>`).join("");
+  ["q", "f-major", "f-year", "f-level", "f-focus", "f-status", "f-sort", "f-pf"].forEach((id) =>
+    $(id).addEventListener(id === "q" ? "input" : "change", render));
+  $("reset").addEventListener("click", () => {
+    ["q", "f-major", "f-year", "f-level", "f-focus", "f-status"].forEach((id) => ($(id).value = ""));
+    $("f-sort").value = "level"; $("f-pf").checked = false; render();
+  });
+}
+
+function filtered() {
+  const q = $("q").value.trim().toLowerCase();
+  const major = $("f-major").value, year = $("f-year").value, level = $("f-level").value;
+  const focus = $("f-focus").value, status = $("f-status").value, pf = $("f-pf").checked;
+  const list = MEMBERS.filter((m) => {
+    if (major && m.major !== major) return false;
+    if (year && String(m.year) !== year) return false;
+    if (level && (level === "Not assessed" ? m.level : m.level !== level)) return false;
+    if (focus && !m.focus.includes(focus)) return false;
+    if (status && (status === "complete") !== m.complete) return false;
+    if (pf && !m.portfolio) return false;
+    if (q) {
+      const hay = [m.name, m.en, m.major, m.email, m.summary, noteOf(m), ...m.skills, ...m.focus, ...m.projects, ...m.experience].join(" ").toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  const sort = $("f-sort").value;
+  const by = {
+    level: (a, b) => lvIndex(b) - lvIndex(a) || (b.gpa ?? 0) - (a.gpa ?? 0),
+    gpa: (a, b) => (b.gpa ?? -1) - (a.gpa ?? -1),
+    year: (a, b) => (b.year ?? 0) - (a.year ?? 0) || lvIndex(b) - lvIndex(a),
+    name: (a, b) => (a.en || a.name).localeCompare(b.en || b.name),
+  }[sort];
+  return list.sort(by);
+}
+
+/* ---------- Cards ---------- */
+function meter(m) {
+  const n = lvIndex(m);
+  return `<span class="meter" aria-hidden="true">${[1, 2, 3, 4].map((i) => `<i class="${i <= n ? "on" : ""}"></i>`).join("")}</span>`;
+}
+function card(m, i) {
+  const badge = `<span style="display:flex;gap:8px;align-items:center">${noteOf(m) ? '<span class="notedot">● Note</span>' : ""}${!m.complete ? '<span class="badge warn">Incomplete</span>' : ""}</span>`;
+  const meta = [m.major, yearLabel(m.year)].filter(Boolean).map(esc);
+  const cv = m.cv ? `<a href="${esc(m.cv)}" target="_blank" rel="noopener">CV</a>` : '<span class="empty">No CV</span>';
+  const pf = m.portfolio ? `<a href="${esc(m.portfolio)}" target="_blank" rel="noopener">Portfolio</a>` : '<span class="empty">No portfolio</span>';
+  return `<article class="card ${m.complete ? "" : "incomplete"}" tabindex="0" role="button" data-i="${i}" aria-label="Open profile: ${esc(m.en || m.name)}">
+    <div class="top"><div><div class="name" dir="auto">${esc(m.name)}</div>${showEn(m) ? `<div class="en">${esc(m.en)}</div>` : ""}</div>${badge}</div>
+    <div class="meta">${meta.length ? meta.map((x) => `<span>${x}</span>`).join("") : '<span class="empty">No major or year on file</span>'}${m.gpa != null ? `<span class="gpa mono">GPA ${m.gpa.toFixed(2)}</span>` : ""}</div>
+    <div class="level">${meter(m)}<span>${m.level ?? '<span class="empty">Not assessed</span>'}</span></div>
+    <div class="tags">${m.focus.map((f) => `<span class="tag">${esc(f)}</span>`).join("")}</div>
+    <div class="links">${cv}${pf}</div>
+  </article>`;
+}
+let current = [];
+function render() {
+  current = filtered();
+  $("count").textContent = `Showing ${current.length} of ${MEMBERS.length}`;
+  $("grid").innerHTML = current.length ? current.map((m) => card(m, MEMBERS.indexOf(m))).join("")
+    : '<div class="none">No members match these filters.</div>';
+  const lv = $("f-level").value;
+  document.querySelectorAll("#legend button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.level === lv)));
+  if (view === "skills") renderSkills();
+}
+
+/* ---------- Views ---------- */
+let view = "members";
+const PANELS = { members: "grid", pairs: "pairs", skills: "skills" };
+function setView(v) {
+  view = v;
+  document.querySelectorAll(".tabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.view === v)));
+  Object.entries(PANELS).forEach(([k, id]) => ($(id).hidden = k !== v));
+  $("filters").hidden = v === "pairs";
+  $("resultbar").hidden = v === "pairs";
+  if (v === "pairs") renderPairs();
+  try { history.replaceState(null, "", v === "members" ? location.pathname + location.search : "#" + v); } catch {}
+  render();
+}
+document.querySelector(".tabs").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-view]"); if (b) setView(b.dataset.view);
+});
+
+/* ---------- Mentor pairs ---------- */
+function computePairs() {
+  const done = MEMBERS.filter((m) => m.complete);
+  const mentors = done.filter((m) => lvIndex(m) >= 3);
+  const mentees = done.filter((m) => lvIndex(m) <= 2);
+  const cap = Math.ceil(mentees.length / Math.max(mentors.length, 1));
+  const cands = [];
+  for (const a of mentors) for (const b of mentees) {
+    const f = a.focus.filter((x) => b.focus.includes(x));
+    const s = a.norm.filter((x) => b.norm.includes(x));
+    // Shared focus matters most, then shared skills; a wider level gap breaks ties.
+    cands.push({ a, b, f, s, v: f.length * 3 + s.length + (lvIndex(a) - lvIndex(b)) * 0.5 });
+  }
+  cands.sort((x, y) => y.v - x.v);
+  const load = new Map(mentors.map((m) => [m, []]));
+  const taken = new Set();
+  for (const c of cands) {
+    if (taken.has(c.b) || load.get(c.a).length >= cap) continue;
+    load.get(c.a).push(c); taken.add(c.b);
+  }
+  const groups = [...load].map(([mentor, list]) => ({ mentor, list }))
+    .sort((x, y) => lvIndex(y.mentor) - lvIndex(x.mentor) || y.list.length - x.list.length);
+  return { cap, groups };
+}
+function who(m, role) {
+  return `<button type="button" class="who" data-i="${MEMBERS.indexOf(m)}">
+    <span class="pn" dir="auto">${esc(m.name)}</span>
+    <span class="pl">${meter(m)}${esc(m.level)}${role ? ` · ${role}` : ""}${showEn(m) ? ` · ${esc(m.en)}` : ""}</span>
+  </button>`;
+}
+function why(c) {
+  const parts = [];
+  if (c.f.length) parts.push(`Shared focus: <b>${c.f.map(esc).join(", ")}</b>`);
+  if (c.s.length) parts.push(`Shared skills: <b>${c.s.slice(0, 5).map(esc).join(", ")}</b>`);
+  return parts.length ? parts.join(" · ") : "No direct overlap; assigned to balance mentor load.";
+}
+function renderPairs() {
+  const { cap, groups } = computePairs();
+  $("cap").textContent = cap;
+  $("pair-list").innerHTML = groups.map((g) => `<div class="pair">
+    ${who(g.mentor, "Mentor")}
+    ${g.list.length
+      ? `<ul class="mentees">${g.list.map((c) => `<li>${who(c.b)}<span class="why">${why(c)}</span></li>`).join("")}</ul>`
+      : '<p class="why" style="margin:0">No mentee assigned. Could co-mentor or run a session instead.</p>'}
+  </div>`).join("");
+}
+$("pair-list").addEventListener("click", (e) => {
+  const b = e.target.closest(".who"); if (b) open(+b.dataset.i, b);
+});
+
+/* ---------- Skills matrix ---------- */
+let skillSort = null;
+function renderSkills() {
+  const rows = current.filter((m) => m.complete);
+  const totals = {};
+  MEMBERS.filter((m) => m.complete).forEach((m) => m.norm.forEach((s) => (totals[s] = (totals[s] || 0) + 1)));
+  const cols = Object.entries(totals).filter(([, n]) => n >= 2)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([s]) => s);
+  const r = skillSort ? [...rows].sort((a, b) => b.norm.includes(skillSort) - a.norm.includes(skillSort)) : rows;
+  const inView = (s) => rows.filter((m) => m.norm.includes(s)).length;
+  $("matrix").innerHTML = `
+    <thead><tr><th scope="col" class="label">Member</th>${cols.map((s) =>
+      `<th scope="col"><button type="button" data-skill="${esc(s)}" aria-pressed="${s === skillSort}" title="Sort by ${esc(s)}"><span class="sk">${esc(s)}</span><span class="ct">${inView(s)}</span></button></th>`).join("")}</tr></thead>
+    <tbody>${r.length ? r.map((m) => `<tr>
+      <td><button type="button" class="mname" data-i="${MEMBERS.indexOf(m)}" dir="auto">${esc(m.name)}<span class="ml">${esc(m.level)}</span></button></td>
+      ${cols.map((s) => { const has = m.norm.includes(s);
+        return `<td class="${has && s === skillSort ? "hit" : ""}">${has ? `<span class="dot" role="img" aria-label="Has ${esc(s)}"></span>` : ""}</td>`; }).join("")}
+    </tr>`).join("") : `<tr><td colspan="${cols.length + 1}" class="muted">No analyzed members match these filters.</td></tr>`}</tbody>`;
+}
+$("matrix").addEventListener("click", (e) => {
+  const sk = e.target.closest("button[data-skill]");
+  if (sk) { skillSort = skillSort === sk.dataset.skill ? null : sk.dataset.skill; renderSkills(); return; }
+  const n = e.target.closest(".mname"); if (n) open(+n.dataset.i, n);
+});
+$("grid").addEventListener("click", (e) => {
+  if (e.target.closest("a")) return;
+  const c = e.target.closest(".card"); if (c) open(+c.dataset.i, c);
+});
+$("grid").addEventListener("keydown", (e) => {
+  const c = e.target.closest(".card");
+  if (c && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); open(+c.dataset.i, c); }
+});
+
+/* ---------- Drawer ---------- */
+let opener = null;
+function list(items) { return items.length ? `<ul>${items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : `<p>${dash}</p>`; }
+function para(t) { return `<p>${t ? esc(t) : dash}</p>`; }
+function open(i, from) {
+  const m = MEMBERS[i]; opener = from;
+  const links = [];
+  if (m.cv) links.push([m.cvLocal ? "CV (club OneDrive)" : "CV", m.cv]);
+  if (m.cvLocal) links.push(["CV (local file)", m.cvLocal]);
+  if (m.portfolio) links.push(["Portfolio", m.portfolio]);
+  Object.entries(m.links).forEach(([k, v]) => links.push([k, v]));
+
+  const d = $("drawer");
+  d.innerHTML = `
+    <div class="dhead">
+      <div style="display:grid;gap:4px">
+        <h2 id="d-name" dir="auto">${esc(m.name)}</h2>
+        ${showEn(m) ? `<span class="muted">${esc(m.en)}</span>` : ""}
+      </div>
+      <button class="close" type="button" id="d-close" aria-label="Close profile">×</button>
+    </div>
+
+    <div class="level">${meter(m)}<span>${m.level ?? "Not assessed"}</span>${!m.complete ? '<span class="badge warn">Incomplete</span>' : ""}</div>
+
+    <dl class="kv">
+      <dt>Major</dt><dd>${m.major ? esc(m.major) : dash}</dd>
+      <dt>Major fit</dt><dd>${m.fit ? esc(m.fit) : dash}</dd>
+      <dt>Year</dt><dd>${m.year ? yearLabel(m.year) : dash}</dd>
+      <dt>GPA</dt><dd class="mono">${m.gpa != null ? `${m.gpa.toFixed(2)} / 5.00` : dash}</dd>
+      <dt>Email</dt><dd>${m.email ? esc(m.email) : dash}</dd>
+      <dt>Phone</dt><dd class="mono">${m.phone ? esc(m.phone) : dash}</dd>
+    </dl>
+
+    <div class="sec"><h3 class="label">Links</h3>
+      ${links.length ? `<div class="dlinks">${links.map(([k, v]) => `<a href="${esc(v)}" target="_blank" rel="noopener">${esc(k)}</a>`).join("")}</div>` : `<p>${dash}</p>`}
+    </div>
+
+    ${m.notes.length ? `<div class="notes sec"><h3 class="label" style="color:var(--warn)">Data notes</h3>${list(m.notes)}</div>` : ""}
+
+    <div class="sec"><h3 class="label">Summary</h3>${para(m.summary)}</div>
+    <div class="split">
+      <div class="sec"><h3 class="label">Strengths</h3>${para(m.strengths)}</div>
+      <div class="sec"><h3 class="label">Gaps</h3>${para(m.gaps)}</div>
+    </div>
+    <div class="lead sec"><h3 class="label">How to lead them</h3>${para(m.next)}</div>
+
+    <div class="sec mynote">
+      <h3 class="label"><label for="d-note">My notes</label></h3>
+      <textarea id="d-note" placeholder="1:1 check-ins, goals, what they asked for, who to pair them with…">${esc(noteOf(m))}</textarea>
+      <span class="hint" id="d-note-status">Private to you. Saved automatically in this browser only.</span>
+    </div>
+
+    <div class="sec"><h3 class="label">Skills</h3>
+      ${m.skills.length ? `<div class="tags">${m.skills.map((s) => `<span class="tag">${esc(s)}</span>`).join("")}</div>` : `<p>${dash}</p>`}
+    </div>
+    <div class="sec"><h3 class="label">Focus</h3>
+      ${m.focus.length ? `<div class="tags">${m.focus.map((s) => `<span class="tag">${esc(s)}</span>`).join("")}</div>` : `<p>${dash}</p>`}
+    </div>
+    <div class="sec"><h3 class="label">Projects</h3>${list(m.projects)}</div>
+    <div class="sec"><h3 class="label">Experience & activities</h3>${list(m.experience)}</div>`;
+  d.hidden = false; $("scrim").hidden = false;
+  document.body.style.overflow = "hidden";
+  d.scrollTop = 0;
+  $("d-close").addEventListener("click", close);
+  $("d-note").addEventListener("input", (e) => {
+    noteDirty = true;
+    $("d-note-status").textContent = saveNote(m, e.target.value)
+      ? "Saved in this browser."
+      : "Couldn't save: this browser is blocking local storage for this page.";
+  });
+  openIdx = i;
+  $("d-close").focus();
+}
+let openIdx = -1, noteDirty = false;
+function close() {
+  $("drawer").hidden = true; $("scrim").hidden = true; document.body.style.overflow = "";
+  if (noteDirty) { noteDirty = false; render(); }
+  const back = opener && document.contains(opener) ? opener : $(PANELS[view]).querySelector(`[data-i="${openIdx}"]`);
+  if (back) back.focus();
+}
+$("scrim").addEventListener("click", close);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("drawer").hidden) close(); });
+
+if (LEAD) { $("lead-name").textContent = LEAD; $("lead").hidden = false; }
+overview();
+setupFilters();
+const startView = location.hash.slice(1);
+if (PANELS[startView]) setView(startView); else render();
+</script>
+</body>
+</html>
