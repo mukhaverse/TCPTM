@@ -220,6 +220,24 @@ header p { margin: 0; color: var(--muted); max-width: 70ch; }
 .why { font-size: 12.5px; color: var(--muted); }
 .why b { font-weight: 500; color: var(--ink); }
 
+/* Group controls */
+.gcontrols { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; margin-bottom: 14px; }
+.seg { display: flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 3px; gap: 3px; }
+.seg button {
+  border: 0; background: none; border-radius: 6px; padding: 6px 12px; cursor: pointer; display: grid; line-height: 1.25; text-align: left;
+}
+.seg button span:first-child { font-weight: 500; }
+.seg button .sub { font-size: 11.5px; color: var(--muted); font-family: var(--mono); }
+.seg button:hover { background: var(--sunk); }
+.seg button[aria-checked="true"] { background: var(--accent); color: var(--accent-ink); }
+.seg button[aria-checked="true"] .sub { color: inherit; opacity: .8; }
+.ghead { display: flex; align-items: baseline; gap: 10px; }
+.gtheme { font-size: 12.5px; color: var(--muted); }
+.gsize { margin-left: auto; font-size: 12px; color: var(--muted); }
+.gbar { display: flex; gap: 2px; height: 6px; }
+.gbar span { flex: 1; border-radius: 1px; }
+.mentors { display: grid; gap: 10px; }
+
 /* Skills matrix */
 .matrix-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
 .matrix { border-collapse: collapse; font-size: 13px; min-width: 100%; }
@@ -277,7 +295,7 @@ header p { margin: 0; color: var(--muted); max-width: 70ch; }
 
   <nav class="tabs" role="tablist" aria-label="Views">
     <button type="button" role="tab" id="tab-members" data-view="members" aria-selected="true">Members</button>
-    <button type="button" role="tab" id="tab-pairs" data-view="pairs" aria-selected="false">Mentor pairs</button>
+    <button type="button" role="tab" id="tab-pairs" data-view="pairs" aria-selected="false">Mentor groups</button>
     <button type="button" role="tab" id="tab-skills" data-view="skills" aria-selected="false">Skills</button>
   </nav>
 
@@ -302,7 +320,11 @@ header p { margin: 0; color: var(--muted); max-width: 70ch; }
   <main class="grid" id="grid" role="tabpanel" aria-labelledby="tab-members"></main>
 
   <section id="pairs" role="tabpanel" aria-labelledby="tab-pairs" hidden>
-    <p class="intro muted">Advanced and Intermediate members are paired with Beginner and Developing members, matched on shared focus areas first and then shared skills, with at most <span id="cap"></span> mentees each. Members without an analyzed CV aren't paired yet.</p>
+    <div class="gcontrols">
+      <div class="seg" role="radiogroup" aria-label="Number of groups" id="gseg"></div>
+      <label class="check" for="g-all"><input type="checkbox" id="g-all"> Include members without a CV</label>
+    </div>
+    <p class="intro muted" id="g-intro"></p>
     <div class="pairs" id="pair-list"></div>
   </section>
 
@@ -492,52 +514,121 @@ document.querySelector(".tabs").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-view]"); if (b) setView(b.dataset.view);
 });
 
-/* ---------- Mentor pairs ---------- */
-function computePairs() {
-  const done = MEMBERS.filter((m) => m.complete);
-  const mentors = done.filter((m) => lvIndex(m) >= 3);
-  const mentees = done.filter((m) => lvIndex(m) <= 2);
-  const cap = Math.ceil(mentees.length / Math.max(mentors.length, 1));
+/* ---------- Mentor groups ---------- */
+const GKEY = "tcptm-roster-groups";
+let gPrefs = { k: null, all: false };
+try { gPrefs = { ...gPrefs, ...JSON.parse(localStorage.getItem(GKEY)) }; } catch {}
+const mentorPool = () => MEMBERS.filter((m) => m.complete && lvIndex(m) >= 3)
+  .sort((a, b) => lvIndex(b) - lvIndex(a) || b.norm.length - a.norm.length);
+const menteePool = () => MEMBERS.filter((m) => m.complete && lvIndex(m) <= 2);
+
+function overlap(g, m) {
+  const fs = new Set(g.mentors.flatMap((x) => x.focus)), ss = new Set(g.mentors.flatMap((x) => x.norm));
+  const f = m.focus.filter((x) => fs.has(x)), s = m.norm.filter((x) => ss.has(x));
+  return { f, s, v: f.length * 3 + s.length };
+}
+function computeGroups(k, includeAll) {
+  const mentors = mentorPool(), mentees = menteePool();
+  // The k strongest mentors seed the groups, so Advanced mentors land in different groups.
+  const groups = mentors.slice(0, k).map((m) => ({ mentors: [m], members: [] }));
+  const mcap = Math.ceil(mentors.length / k);
+  let rest = mentors.slice(k);
+  while (rest.length) {
+    let best = null;
+    for (const m of rest) for (const g of groups) {
+      if (g.mentors.length >= mcap) continue;
+      const v = overlap(g, m).v - g.mentors.length * 0.1;
+      if (!best || v > best.v) best = { m, g, v };
+    }
+    best.g.mentors.push(best.m);
+    rest = rest.filter((x) => x !== best.m);
+  }
+  // Mentees: best overall match first. Each group takes `base` mentees; only `extra` groups may take one more,
+  // so group sizes never differ by more than one.
+  const base = Math.floor(mentees.length / k);
+  let extra = mentees.length % k;
+  const cap = base + (extra ? 1 : 0);
   const cands = [];
-  for (const a of mentors) for (const b of mentees) {
-    const f = a.focus.filter((x) => b.focus.includes(x));
-    const s = a.norm.filter((x) => b.norm.includes(x));
-    // Shared focus matters most, then shared skills; a wider level gap breaks ties.
-    cands.push({ a, b, f, s, v: f.length * 3 + s.length + (lvIndex(a) - lvIndex(b)) * 0.5 });
+  for (const g of groups) {
+    const top = Math.max(...g.mentors.map(lvIndex));
+    for (const b of mentees) { const o = overlap(g, b); cands.push({ g, b, ...o, v: o.v + (top - lvIndex(b)) * 0.5 }); }
   }
   cands.sort((x, y) => y.v - x.v);
-  const load = new Map(mentors.map((m) => [m, []]));
   const taken = new Set();
   for (const c of cands) {
-    if (taken.has(c.b) || load.get(c.a).length >= cap) continue;
-    load.get(c.a).push(c); taken.add(c.b);
+    if (taken.has(c.b)) continue;
+    const n = c.g.members.length;
+    if (n > base || (n === base && !extra)) continue;
+    if (n === base) extra--;
+    c.g.members.push(c); taken.add(c.b);
   }
-  const groups = [...load].map(([mentor, list]) => ({ mentor, list }))
-    .sort((x, y) => lvIndex(y.mentor) - lvIndex(x.mentor) || y.list.length - x.list.length);
-  return { cap, groups };
+  if (includeAll) {
+    for (const m of MEMBERS.filter((x) => !x.complete)) {
+      const g = groups.reduce((a, b) => (b.mentors.length + b.members.length < a.mentors.length + a.members.length ? b : a));
+      g.members.push({ b: m, f: [], s: [], nocv: true });
+    }
+  }
+  return { groups, cap, mcap };
+}
+function theme(g) {
+  const count = {};
+  [...g.mentors, ...g.members.map((c) => c.b)].forEach((m) => m.focus.forEach((f) => (count[f] = (count[f] || 0) + 1)));
+  return Object.entries(count).filter(([, n]) => n >= 2).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([f]) => f);
 }
 function who(m, role) {
   return `<button type="button" class="who" data-i="${MEMBERS.indexOf(m)}">
     <span class="pn" dir="auto">${esc(m.name)}</span>
-    <span class="pl">${meter(m)}${esc(m.level)}${role ? ` · ${role}` : ""}${showEn(m) ? ` · ${esc(m.en)}` : ""}</span>
+    <span class="pl">${meter(m)}${esc(m.level ?? "Not assessed")}${role ? ` · ${role}` : ""}${showEn(m) ? ` · ${esc(m.en)}` : ""}</span>
   </button>`;
 }
 function why(c) {
+  if (c.nocv) return "No CV yet; placed to balance group size.";
   const parts = [];
   if (c.f.length) parts.push(`Shared focus: <b>${c.f.map(esc).join(", ")}</b>`);
   if (c.s.length) parts.push(`Shared skills: <b>${c.s.slice(0, 5).map(esc).join(", ")}</b>`);
-  return parts.length ? parts.join(" · ") : "No direct overlap; assigned to balance mentor load.";
+  return parts.length ? parts.join(" · ") : "No direct overlap; assigned to balance group size.";
+}
+function groupOptions() {
+  const n = mentorPool().length;
+  return [...new Set([n, 6, 5, 4, 3])].filter((k) => k <= n && k >= 2).sort((a, b) => b - a);
 }
 function renderPairs() {
-  const { cap, groups } = computePairs();
-  $("cap").textContent = cap;
-  $("pair-list").innerHTML = groups.map((g) => `<div class="pair">
-    ${who(g.mentor, "Mentor")}
-    ${g.list.length
-      ? `<ul class="mentees">${g.list.map((c) => `<li>${who(c.b)}<span class="why">${why(c)}</span></li>`).join("")}</ul>`
-      : '<p class="why" style="margin:0">No mentee assigned. Could co-mentor or run a session instead.</p>'}
-  </div>`).join("");
+  const opts = groupOptions();
+  if (!opts.includes(gPrefs.k)) gPrefs.k = opts[0];
+  const k = gPrefs.k, pairsMode = k === opts[0];
+  $("g-all").checked = gPrefs.all;
+  const people = MEMBERS.filter((m) => gPrefs.all || m.complete).length;
+  $("gseg").innerHTML = opts.map((o) => `<button type="button" role="radio" data-k="${o}" aria-checked="${o === k}">
+    <span>${o} groups</span><span class="sub">~${Math.round(people / o)} each</span></button>`).join("");
+
+  const { groups, cap, mcap } = computeGroups(k, gPrefs.all);
+  const unassessed = MEMBERS.filter((m) => !m.complete).length;
+  $("g-intro").textContent = (pairsMode
+    ? `One mentor per group: each Advanced or Intermediate member mentors up to ${cap} Beginner or Developing members, matched on shared focus areas first and then shared skills.`
+    : `${k} groups with up to ${mcap} mentors each. Advanced mentors are spread so no group has two, then the rest join the group they overlap with most. Members are matched on shared focus and skills, up to ${cap} per group.`)
+    + (gPrefs.all ? ` The ${unassessed} members without a CV are added to the smallest groups.` : ` The ${unassessed} members without a CV aren't placed; turn on the toggle to include them.`);
+
+  $("pair-list").innerHTML = groups.map((g, i) => {
+    const all = [...g.mentors, ...g.members.map((c) => c.b)];
+    const t = theme(g);
+    const bar = [...all].sort((a, b) => lvIndex(b) - lvIndex(a)).map((m) =>
+      `<span class="${m.level ? "" : "hatch"}" style="${m.level ? `background:${LV_COLOR[m.level]}` : ""}" title="${esc(m.en || m.name)}: ${esc(m.level ?? "Not assessed")}"></span>`).join("");
+    return `<div class="pair">
+      <div class="ghead"><span class="label">Group ${i + 1}</span>${t.length ? `<span class="gtheme">${t.map(esc).join(" · ")}</span>` : ""}<span class="gsize mono">${all.length}</span></div>
+      <div class="gbar" aria-hidden="true">${bar}</div>
+      <div class="mentors">${g.mentors.map((m) => who(m, "Mentor")).join("")}</div>
+      ${g.members.length
+        ? `<ul class="mentees">${g.members.map((c) => `<li>${who(c.b)}<span class="why">${why(c)}</span></li>`).join("")}</ul>`
+        : '<p class="why" style="margin:0">No mentee assigned. Could co-mentor or run a session instead.</p>'}
+    </div>`;
+  }).join("");
 }
+function saveGroupPrefs() { try { localStorage.setItem(GKEY, JSON.stringify(gPrefs)); } catch {} }
+$("gseg").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-k]"); if (!b) return;
+  gPrefs.k = +b.dataset.k; saveGroupPrefs(); renderPairs();
+});
+$("g-all").addEventListener("change", (e) => { gPrefs.all = e.target.checked; saveGroupPrefs(); renderPairs(); });
 $("pair-list").addEventListener("click", (e) => {
   const b = e.target.closest(".who"); if (b) open(+b.dataset.i, b);
 });
